@@ -14,7 +14,7 @@ FUTURES_VARIANTS = {
     ],
     "high": [
         "Futures stress reappeared regularly, pointing to recurring crowd pressure rather than one-off bursts.",
-        "High-risk windows showed up often enough to suggest persistent pressure through the month.",
+        "High-risk windows recurred often enough to suggest persistent crowd pressure.",
     ],
     "medium": [
         "Pressure appeared in waves: visible enough to matter, but not broad enough to define the whole 30d structure.",
@@ -32,8 +32,8 @@ FUTURES_VARIANTS = {
 
 OPTIONS_VARIANTS = {
     "high": [
-        "The options layer carried visible structural pressure: directional regimes and compression appeared often enough to matter.",
-        "Options leaned away from neutral often enough to shape the 30d picture, with repeated directional phases and compression.",
+        "The options layer carried clear structural pressure: directional regimes and compression appeared often enough to matter.",
+        "Options moved away from neutral often enough to shape the 30d picture.",
     ],
     "medium": [
         "Options showed selective structural pressure, though not strongly enough to confirm a dominant regime shift.",
