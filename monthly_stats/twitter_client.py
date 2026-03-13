@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 
-from weekly_stats.config import EXPECTED_TWEET_COUNT, MAX_NA_PER_TWEET, REQUEST_TIMEOUT, TWEET_MAX_LEN, TWITTER_POST_URL
+from monthly_stats.config import EXPECTED_TWEET_COUNT, MAX_NA_PER_TWEET, REQUEST_TIMEOUT, TWEET_MAX_LEN, TWITTER_POST_URL
 
 
 def validate_thread_tweets(texts: List[str], expected_count: int = EXPECTED_TWEET_COUNT, max_len: int = TWEET_MAX_LEN) -> Tuple[bool, List[str]]:
