@@ -4,69 +4,93 @@ from typing import Any, Dict, List, Optional, Tuple
 
 INTRO_VARIANTS = [
     "Livermore monthly snapshot (30d)\n\n30-day structural view across:\n\n• futures positioning\n• options expectations\n• volatility background",
-    "Livermore monthly snapshot (30d)\n\nRolling 30-day regime read across:\n\n• futures positioning\n• options expectations\n• volatility background",
+    "Livermore monthly snapshot (30d)\n\n30-day structural read across:\n\n• futures positioning\n• options expectations\n• volatility background",
 ]
 
 FUTURES_VARIANTS = {
     "extreme": [
-        "Futures pressure was frequent and persistent, with repeated high-stress windows shaping the month.",
-        "Crowding was not episodic: stress conditions repeated often enough to define the monthly futures regime.",
+        "Futures crowding stayed frequent enough to shape the month, with repeated high-stress windows rather than isolated flare-ups.",
+        "Pressure in futures was not limited to isolated bursts: high-stress windows repeated often enough to define the monthly structure.",
     ],
     "high": [
-        "Futures stress reappeared regularly, showing persistent pressure rather than isolated bursts.",
-        "High-risk windows were frequent enough to suggest recurring crowd pressure through the month.",
+        "Futures stress reappeared regularly, pointing to recurring crowd pressure rather than one-off bursts.",
+        "High-risk windows showed up often enough to suggest persistent pressure through the month.",
     ],
     "medium": [
-        "Pressure appeared in waves: meaningful, but not dominant enough to define the whole 30d structure.",
-        "Futures stress was visible yet uneven, with intermittent rather than continuous pressure.",
+        "Pressure appeared in waves: visible enough to matter, but not broad enough to define the whole 30d structure.",
+        "Futures stress remained uneven, with intermittent pressure rather than a fully sustained crowding regime.",
     ],
     "light": [
-        "Futures pressure stayed mostly local, with only occasional high-risk expansion.",
-        "Some stress appeared, but it stayed episodic and limited in market-wide persistence.",
+        "Futures pressure stayed mostly local, with only occasional expansion into higher-risk conditions.",
+        "Some stress appeared, but it remained selective rather than broad enough to shape the monthly picture.",
     ],
     "calm": [
-        "Futures structure remained mostly contained, with low recurrence of high-stress windows.",
-        "The month looked relatively calm in futures, without broad persistent crowding.",
+        "Futures structure remained mostly contained, with limited recurrence of higher-stress windows.",
+        "The month stayed relatively calm in futures, without a broad crowding regime taking hold.",
     ],
 }
 
 OPTIONS_VARIANTS = {
     "high": [
-        "Options were structurally active: directional regimes and compression appeared often enough to matter.",
-        "Options leaned away from neutral, with sustained directional or compressed episodes in the 30d view.",
+        "The options layer carried visible structural pressure: directional regimes and compression appeared often enough to matter.",
+        "Options leaned away from neutral often enough to shape the 30d picture, with repeated directional phases and compression.",
     ],
     "medium": [
-        "Options showed selective directional pressure, but not a fully dominant regime shift.",
-        "The options layer was mixed: some directional/compression phases, but no uninterrupted regime.",
+        "Options showed selective structural pressure, though not strongly enough to confirm a dominant regime shift.",
+        "The options layer stayed mixed: directional phases and compression appeared, but without a clean persistent regime.",
     ],
     "calm": [
-        "Options stayed mostly neutral, with directional and high-compression windows limited.",
-        "The options regime remained largely balanced, with only light structural pressure.",
+        "Options stayed mostly neutral, with directional and high-compression windows remaining limited.",
+        "The options regime remained broadly balanced, with only light structural pressure across the month.",
     ],
 }
 
 VOL_VARIANTS = {
     "high": [
-        "Volatility stayed elevated for a meaningful share of windows, pointing to persistent repricing background.",
-        "BTC/ETH often sat in warm-hot states together, suggesting non-trivial volatility expansion backdrop.",
+        "Volatility stayed elevated across enough windows to matter, pointing to a firmer repricing backdrop through the month.",
+        "BTC and ETH aligned in elevated volatility states often enough to suggest a persistent expansion backdrop.",
     ],
     "medium": [
-        "Volatility firmness appeared repeatedly, but mostly in shorter phases rather than one continuous expansion.",
-        "The vol backdrop was active in parts, though persistence remained moderate.",
+        "Volatility firmness appeared repeatedly, though mostly in shorter phases rather than one sustained expansion.",
+        "The volatility backdrop turned firmer in parts, though persistence remained moderate rather than dominant.",
     ],
     "calm": [
-        "Volatility conditions were mostly contained, with limited overlap of elevated BTC/ETH states.",
-        "Warm-hot phases were present but not persistent enough to dominate the monthly structure.",
+        "Volatility conditions stayed mostly contained, with limited overlap in elevated BTC/ETH states.",
+        "Elevated volatility phases appeared, but not persistently enough to dominate the monthly structure.",
     ],
 }
 
 SYNTHESIS_VARIANTS = {
-    "contained": "Structural takeaway:\n\nThe 30d profile stayed contained: pressure signals were limited and did not synchronize into a broad regime shift.",
-    "mixed": "Structural takeaway:\n\nThe month was mixed: stress appeared across layers, but persistence and alignment were uneven.",
-    "futures_led": "Structural takeaway:\n\nFutures led the month: crowd pressure repeated more consistently than options or volatility confirmation.",
-    "options_led": "Structural takeaway:\n\nOptions led the structure: directional/compression signals were stronger than futures confirmation.",
-    "vol_led": "Structural takeaway:\n\nVolatility led the month: elevated vol background was clearer than futures pressure.",
-    "broad_pressure": "Structural takeaway:\n\nBroad pressure regime: futures stress, options structure, and volatility backdrop aligned often enough to matter.",
+    "contained": (
+        "Structural takeaway:\n\n"
+        "The 30d profile stayed contained.\n\n"
+        "Pressure signals were limited and never aligned strongly enough to suggest a broader regime shift."
+    ),
+    "mixed": (
+        "Structural takeaway:\n\n"
+        "The month stayed mixed.\n\n"
+        "Stress appeared across layers, but persistence and alignment remained uneven."
+    ),
+    "futures_led": (
+        "Structural takeaway:\n\n"
+        "Futures carried the clearest sign of pressure.\n\n"
+        "Crowding repeated more consistently than confirmation from options or volatility."
+    ),
+    "options_led": (
+        "Structural takeaway:\n\n"
+        "The options layer carried more of the structural signal.\n\n"
+        "Directional regimes and compression were clearer than confirmation from futures."
+    ),
+    "vol_led": (
+        "Structural takeaway:\n\n"
+        "The volatility backdrop carried more of the month than futures positioning did.\n\n"
+        "Elevated vol conditions were clearer than broad crowding in futures."
+    ),
+    "broad_pressure": (
+        "Structural takeaway:\n\n"
+        "Pressure was not confined to one layer.\n\n"
+        "Futures stress, options structure, and the volatility backdrop aligned often enough to matter at the monthly horizon."
+    ),
 }
 
 
@@ -162,7 +186,9 @@ def build_thread_tweets(stats: Dict[str, Any]) -> List[str]:
     ge3 = risk.get("market_high_risk_ge3_share_pct") or 0.0
     ge5 = risk.get("market_high_risk_ge5_share_pct") or 0.0
     avg_risk = risk.get("avg_risk") or 0.0
-    leaders = top_symbol_names(risk.get("top_symbols_by_risk_ge_3_share_pct") or risk.get("top_symbols_by_avg_risk") or [])
+    leaders = top_symbol_names(
+        risk.get("top_symbols_by_risk_ge_3_share_pct") or risk.get("top_symbols_by_avg_risk") or []
+    )
 
     calm = bybit.get("regime_calm_pct") or 0.0
     directional = bybit.get("regime_directional_total_pct") or 0.0
@@ -180,7 +206,7 @@ def build_thread_tweets(stats: Dict[str, Any]) -> List[str]:
         f"High-risk windows (risk≥3): {p(ge3)}\n"
         f"Extreme stress (risk≥5): {p(ge5)}\n"
         f"Most persistent pressure: {leaders}\n\n"
-        f"{pick_variant(FUTURES_VARIANTS.get(fb, []), 'Futures stress stayed mixed through the month.')}"
+        f"{pick_variant(FUTURES_VARIANTS.get(fb, []), 'Futures pressure stayed mixed through the month.')}"
     )
 
     ob = options_bucket(directional, compression, calm)
@@ -189,7 +215,7 @@ def build_thread_tweets(stats: Dict[str, Any]) -> List[str]:
         f"CALM regime share: {p(calm)}\n"
         f"Directional regimes: {p(directional)}\n"
         f"High-compression windows (>0.6): {p(compression)}\n\n"
-        f"{pick_variant(OPTIONS_VARIANTS.get(ob, []), 'Options structure stayed mixed through the month.')}"
+        f"{pick_variant(OPTIONS_VARIANTS.get(ob, []), 'The options layer stayed mixed through the month.')}"
     )
 
     vb = vol_bucket(btc_wh, eth_wh, overlap)
@@ -198,7 +224,7 @@ def build_thread_tweets(stats: Dict[str, Any]) -> List[str]:
         f"BTC warm+hot share: {p(btc_wh)}\n"
         f"ETH warm+hot share: {p(eth_wh)}\n"
         f"BTC/ETH warm overlap: {p(overlap)} of windows\n\n"
-        f"{pick_variant(VOL_VARIANTS.get(vb, []), 'Volatility stayed mixed through the month.')}"
+        f"{pick_variant(VOL_VARIANTS.get(vb, []), 'The volatility backdrop stayed mixed through the month.')}"
     )
 
     sb = synthesis_bucket(stats)
