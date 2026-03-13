@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from weekly_stats.utils import safe_int
+from monthly_stats.utils import safe_int
 
 
 def get_data_field(row: Dict[str, Any], key: str, default: Any = None) -> Any:
