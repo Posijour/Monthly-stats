@@ -1,7 +1,6 @@
 import sys
 
-from weekly_stats.pipeline import main
-
+from monthly_stats.pipeline import main
 
 if __name__ == "__main__":
     try:
