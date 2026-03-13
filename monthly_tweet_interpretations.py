@@ -22,7 +22,7 @@ FUTURES_VARIANTS = {
     ],
     "light": [
         "Futures pressure stayed mostly local, with only occasional expansion into higher-risk conditions.",
-        "Some stress appeared, but it remained selective rather than broad enough to shape the monthly picture.",
+        "Some stress appeared, but it remained selective rather than broad enough to shape the monthly structure.",
     ],
     "calm": [
         "Futures structure remained mostly contained, with limited recurrence of higher-stress windows.",
@@ -33,7 +33,7 @@ FUTURES_VARIANTS = {
 OPTIONS_VARIANTS = {
     "high": [
         "The options layer carried clear structural pressure: directional regimes and compression appeared often enough to matter.",
-        "Options moved away from neutral often enough to shape the 30d picture.",
+        "Options moved away from neutral often enough to shape the 30d structure.",
     ],
     "medium": [
         "Options showed selective structural pressure, though not strongly enough to confirm a dominant regime shift.",
@@ -52,7 +52,7 @@ VOL_VARIANTS = {
     ],
     "medium": [
         "Volatility firmness appeared repeatedly, though mostly in shorter phases rather than one sustained expansion.",
-        "The volatility backdrop turned firmer in parts, though persistence remained moderate rather than dominant.",
+        "The volatility backdrop turned firmer at times, though persistence remained moderate rather than dominant.",
     ],
     "calm": [
         "Volatility conditions stayed mostly contained, with limited overlap in elevated BTC/ETH states.",
