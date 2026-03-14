@@ -13,9 +13,9 @@ def _as_float(value: Any) -> float:
 
 
 INTRO_VARIANTS: List[str] = [
-    "Livermore weekly structural read (30d) 0",
-    "Livermore weekly regime read (30d) 0",
-    "Livermore weekly structure read (30d) 0",
+    "Livermore monthly structural read (30d)",
+    "Livermore monthly regime read (30d)",
+    "Livermore monthly structure read (30d)",
 ]
 
 FUTURES_VARIANTS: Dict[str, List[str]] = {
