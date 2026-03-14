@@ -16,7 +16,10 @@ def compute_risk_stats(rows: List[Dict[str, Any]], start_dt: datetime, end_dt: d
 
     per_symbol_risks: Dict[str, List[float]] = defaultdict(list)
     per_symbol_obs: Counter = Counter()
+    per_symbol_ge_2: Counter = Counter()
     per_symbol_ge_3: Counter = Counter()
+    per_symbol_ge_4: Counter = Counter()
+    per_symbol_ge_5: Counter = Counter()
 
     market_high_risk_hours: Dict[str, set] = {
         "risk_ge_2": set(),
@@ -42,13 +45,16 @@ def compute_risk_stats(rows: List[Dict[str, Any]], start_dt: datetime, end_dt: d
 
         if risk >= 2:
             market_high_risk_hours["risk_ge_2"].add(hour_bucket)
+            per_symbol_ge_2[sym] += 1
         if risk >= 3:
             market_high_risk_hours["risk_ge_3"].add(hour_bucket)
             per_symbol_ge_3[sym] += 1
         if risk >= 4:
             market_high_risk_hours["risk_ge_4"].add(hour_bucket)
+            per_symbol_ge_4[sym] += 1
         if risk >= 5:
             market_high_risk_hours["risk_ge_5"].add(hour_bucket)
+            per_symbol_ge_5[sym] += 1
 
         if max_risk is None or risk > max_risk:
             max_risk = risk
@@ -63,6 +69,11 @@ def compute_risk_stats(rows: List[Dict[str, Any]], start_dt: datetime, end_dt: d
         for sym in per_symbol_obs
         if per_symbol_obs[sym] > 0
     }
+
+    def top_symbol(counter: Counter) -> Any:
+        if not counter:
+            return None
+        return sorted(counter.items(), key=lambda item: (-item[1], item[0]))[0][0]
 
     return {
         "rows": len(risk_rows),
@@ -79,6 +90,10 @@ def compute_risk_stats(rows: List[Dict[str, Any]], start_dt: datetime, end_dt: d
         "market_high_risk_ge3_share_pct": compact_pct(len(market_high_risk_hours["risk_ge_3"]), total_hours),
         "market_high_risk_ge4_share_pct": compact_pct(len(market_high_risk_hours["risk_ge_4"]), total_hours),
         "market_high_risk_ge5_share_pct": compact_pct(len(market_high_risk_hours["risk_ge_5"]), total_hours),
+        "symbol_high_risk_ge2": top_symbol(per_symbol_ge_2),
+        "symbol_high_risk_ge3": top_symbol(per_symbol_ge_3),
+        "symbol_high_risk_ge4": top_symbol(per_symbol_ge_4),
+        "symbol_high_risk_ge5": top_symbol(per_symbol_ge_5),
     }
 
 
