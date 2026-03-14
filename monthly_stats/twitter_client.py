@@ -3,7 +3,14 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 
-from monthly_stats.config import EXPECTED_TWEET_COUNT, MAX_NA_PER_TWEET, REQUEST_TIMEOUT, TWEET_MAX_LEN, TWITTER_POST_URL
+from monthly_stats.config import (
+    EXPECTED_TWEET_COUNT,
+    MAX_NA_PER_TWEET,
+    REQUEST_TIMEOUT,
+    TWEET_MAX_LEN,
+    TWITTER_AUTOPOST_STUB,
+    TWITTER_POST_URL,
+)
 
 
 def validate_thread_tweets(texts: List[str], expected_count: int = EXPECTED_TWEET_COUNT, max_len: int = TWEET_MAX_LEN) -> Tuple[bool, List[str]]:
@@ -107,6 +114,12 @@ def get_required_twitter_credentials() -> Dict[str, str]:
 
 def post_thread_tweets(texts: List[str]) -> List[str]:
     if not texts:
+        return []
+
+    if TWITTER_AUTOPOST_STUB:
+        print("[twitter] TWITTER_AUTOPOST_STUB=true, skipping real Twitter posting", flush=True)
+        for idx, text in enumerate(texts, start=1):
+            print(f"[twitter][stub] tweet_{idx}: {text}", flush=True)
         return []
 
     creds = get_required_twitter_credentials()
