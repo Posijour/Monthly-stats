@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional
 import requests
 
 from monthly_stats.config import REQUEST_TIMEOUT, TABLE_NAME
+from monthly_stats.utils import now_utc
 
 
 def bool_to_int(value: Any) -> Optional[int]:
@@ -28,7 +29,7 @@ def fetch_existing_monthly_row(supabase_url: str, supabase_key: str, period_star
             "Accept": "application/json",
         },
         params={
-            "select": "id,period_start,period_end,root_tweet_id,tweet_count",
+            "select": "id,period_start,period_end,root_tweet_id,tweet_count,telegram_posted,telegram_message_id",
             "period_start": f"eq.{period_start_iso}",
             "period_end": f"eq.{period_end_iso}",
             "order": "id.desc",
@@ -177,6 +178,33 @@ def update_monthly_stats_twitter_fields(row_id: Any, tweet_ids: List[str], supab
 
     if response.status_code not in (200, 204):
         raise RuntimeError(f"Supabase monthly_stats patch failed: HTTP {response.status_code} | {response.text}")
+
+    rows = response.json() if response.text else []
+    if isinstance(rows, list) and rows:
+        return rows[0]
+    return {}
+
+
+def update_monthly_stats_telegram_fields(row_id: Any, message_id: Any, supabase_url: str, supabase_key: str) -> Dict[str, Any]:
+    response = requests.patch(
+        f"{supabase_url}/rest/v1/monthly_stats",
+        headers={
+            "apikey": supabase_key,
+            "Authorization": f"Bearer {supabase_key}",
+            "Content-Type": "application/json",
+            "Prefer": "return=representation",
+        },
+        params={"id": f"eq.{row_id}"},
+        json={
+            "telegram_posted": True,
+            "telegram_message_id": str(message_id) if message_id is not None else None,
+            "telegram_posted_at": now_utc().isoformat(),
+        },
+        timeout=REQUEST_TIMEOUT,
+    )
+
+    if response.status_code not in (200, 204):
+        raise RuntimeError(f"Supabase monthly_stats Telegram patch failed: HTTP {response.status_code} | {response.text}")
 
     rows = response.json() if response.text else []
     if isinstance(rows, list) and rows:
