@@ -2,6 +2,9 @@ import random
 from typing import Any, Dict, List
 
 
+_RNG = random.SystemRandom()
+
+
 def _as_float(value: Any) -> float:
     try:
         return float(value)
@@ -10,9 +13,9 @@ def _as_float(value: Any) -> float:
 
 
 INTRO_VARIANTS: List[str] = [
-    "Livermore monthly structural read (30d)",
-    "Livermore monthly regime read (30d)",
-    "Livermore monthly structure read (30d)",
+    "Livermore weekly structural read (30d) 0",
+    "Livermore weekly regime read (30d) 0",
+    "Livermore weekly structure read (30d) 0",
 ]
 
 FUTURES_VARIANTS: Dict[str, List[str]] = {
@@ -176,7 +179,7 @@ def _pick(options: List[str], fallback: str) -> str:
     cleaned = [x.strip() for x in options if isinstance(x, str) and x.strip()]
     if not cleaned:
         return fallback
-    return random.choice(cleaned)
+    return _RNG.choice(cleaned)
 
 
 def _futures_states(ge3_share: float, ge5_share: float) -> Dict[str, str]:
@@ -281,16 +284,16 @@ def build_monthly_telegram_interpretation(stats: Dict[str, Any]) -> str:
     )
 
     text = (
-        f"{_pick(INTRO_VARIANTS, 'Livermore monthly structural read (30d)')}\n\n"
-        "Futures structure\n"
+        f"<b>{_pick(INTRO_VARIANTS, 'Livermore weekly structural read (30d) 0')}</b>\n\n"
+        "<u>Futures structure</u>\n"
         f"{futures_line}\n\n"
-        "Options structure\n"
+        "<u>Options structure</u>\n"
         f"{options_line}\n\n"
-        "Volatility structure\n"
+        "<u>Volatility structure</u>\n"
         f"{vol_line}\n\n"
-        "Cross-layer read\n"
+        "<u>Cross-layer read</u>\n"
         f"{cross_layer_line}\n\n"
-        "Monthly regime\n"
+        "<u>Monthly regime</u>\n"
         f"{regime_line}"
     )
 
