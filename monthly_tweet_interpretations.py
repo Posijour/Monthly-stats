@@ -7,59 +7,6 @@ INTRO_VARIANTS = [
     "Livermore monthly snapshot (30d)\n\n30-day structural read across:\n\n• futures positioning\n• options expectations\n• volatility background",
 ]
 
-FUTURES_VARIANTS = {
-    "extreme": [
-        "Futures crowding stayed frequent enough to shape the month, with repeated high-stress windows rather than isolated flare-ups.",
-        "Pressure in futures was not limited to isolated bursts: high-stress windows repeated often enough to define the monthly structure.",
-    ],
-    "high": [
-        "Futures stress reappeared regularly, pointing to recurring crowd pressure rather than one-off bursts.",
-        "High-risk windows recurred often enough to suggest persistent crowd pressure.",
-    ],
-    "medium": [
-        "Pressure appeared in waves: visible enough to matter, but not broad enough to define the whole 30d structure.",
-        "Futures stress remained uneven, with intermittent pressure rather than a fully sustained crowding regime.",
-    ],
-    "light": [
-        "Futures pressure stayed mostly local, with only occasional expansion into higher-risk conditions.",
-        "Some stress appeared, but it remained selective rather than broad enough to shape the monthly structure.",
-    ],
-    "calm": [
-        "Futures structure remained mostly contained, with limited recurrence of higher-stress windows.",
-        "The month stayed relatively calm in futures, without a broad crowding regime taking hold.",
-    ],
-}
-
-OPTIONS_VARIANTS = {
-    "high": [
-        "The options layer carried clear structural pressure: directional regimes and compression appeared often enough to matter.",
-        "Options moved away from neutral often enough to shape the 30d structure.",
-    ],
-    "medium": [
-        "Options showed selective structural pressure, though not strongly enough to confirm a dominant regime shift.",
-        "The options layer stayed mixed: directional phases and compression appeared, but without a clean persistent regime.",
-    ],
-    "calm": [
-        "Options stayed mostly neutral, with directional and high-compression windows remaining limited.",
-        "The options regime remained broadly balanced, with only light structural pressure across the month.",
-    ],
-}
-
-VOL_VARIANTS = {
-    "high": [
-        "Volatility stayed elevated across enough windows to matter, pointing to a firmer repricing backdrop through the month.",
-        "BTC and ETH aligned in elevated volatility states often enough to suggest a persistent expansion backdrop.",
-    ],
-    "medium": [
-        "Volatility firmness appeared repeatedly, though mostly in shorter phases rather than one sustained expansion.",
-        "The volatility backdrop turned firmer at times, though persistence remained moderate rather than dominant.",
-    ],
-    "calm": [
-        "Volatility conditions stayed mostly contained, with limited overlap in elevated BTC/ETH states.",
-        "Elevated volatility phases appeared, but not persistently enough to dominate the monthly structure.",
-    ],
-}
-
 SYNTHESIS_VARIANTS = {
     "contained": (
         "Structural takeaway:\n\n"
@@ -123,34 +70,6 @@ def p(x: Optional[float]) -> str:
     return f"{(x or 0.0):.1f}%"
 
 
-def futures_bucket(ge3: float, ge5: float, avg_risk: float) -> str:
-    if ge3 >= 45 or ge5 >= 12 or avg_risk >= 1.2:
-        return "extreme"
-    if ge3 >= 30 or ge5 >= 8 or avg_risk >= 0.9:
-        return "high"
-    if ge3 >= 18 or ge5 >= 4 or avg_risk >= 0.6:
-        return "medium"
-    if ge3 >= 8 or ge5 >= 2 or avg_risk >= 0.3:
-        return "light"
-    return "calm"
-
-
-def options_bucket(directional: float, compression: float, calm: float) -> str:
-    if directional >= 45 or compression >= 20 or calm <= 35:
-        return "high"
-    if directional >= 25 or compression >= 10 or calm <= 55:
-        return "medium"
-    return "calm"
-
-
-def vol_bucket(btc_wh: float, eth_wh: float, overlap: float) -> str:
-    if overlap >= 35 or (btc_wh >= 55 and eth_wh >= 55):
-        return "high"
-    if overlap >= 18 or (btc_wh >= 35 or eth_wh >= 35):
-        return "medium"
-    return "calm"
-
-
 def synthesis_bucket(stats: Dict[str, Any]) -> str:
     risk = stats.get("risk") or {}
     bybit = stats.get("bybit") or {}
@@ -185,7 +104,6 @@ def build_thread_tweets(stats: Dict[str, Any]) -> List[str]:
 
     ge3 = risk.get("market_high_risk_ge3_share_pct") or 0.0
     ge5 = risk.get("market_high_risk_ge5_share_pct") or 0.0
-    avg_risk = risk.get("avg_risk") or 0.0
     leaders = top_symbol_names(
         risk.get("top_symbols_by_risk_ge_3_share_pct") or risk.get("top_symbols_by_avg_risk") or []
     )
@@ -200,31 +118,25 @@ def build_thread_tweets(stats: Dict[str, Any]) -> List[str]:
 
     tw1 = pick_variant(INTRO_VARIANTS, "Livermore monthly snapshot (30d)")
 
-    fb = futures_bucket(ge3, ge5, avg_risk)
     tw2 = (
         f"Futures (30d)\n\n"
         f"High-risk windows (risk≥3): {p(ge3)}\n"
         f"Extreme stress (risk≥5): {p(ge5)}\n"
-        f"Most persistent pressure: {leaders}\n\n"
-        f"{pick_variant(FUTURES_VARIANTS.get(fb, []), 'Futures pressure stayed mixed through the month.')}"
+        f"Most persistent pressure: {leaders}"
     )
 
-    ob = options_bucket(directional, compression, calm)
     tw3 = (
         f"Options (30d)\n\n"
         f"CALM regime share: {p(calm)}\n"
         f"Directional regimes: {p(directional)}\n"
-        f"High-compression windows (>0.6): {p(compression)}\n\n"
-        f"{pick_variant(OPTIONS_VARIANTS.get(ob, []), 'The options layer stayed mixed through the month.')}"
+        f"High-compression windows (>0.6): {p(compression)}"
     )
 
-    vb = vol_bucket(btc_wh, eth_wh, overlap)
     tw4 = (
         f"Volatility (30d)\n\n"
         f"BTC warm+hot share: {p(btc_wh)}\n"
         f"ETH warm+hot share: {p(eth_wh)}\n"
-        f"BTC/ETH warm overlap: {p(overlap)} of windows\n\n"
-        f"{pick_variant(VOL_VARIANTS.get(vb, []), 'The volatility backdrop stayed mixed through the month.')}"
+        f"BTC/ETH warm overlap: {p(overlap)} of windows"
     )
 
     sb = synthesis_bucket(stats)
