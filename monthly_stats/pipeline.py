@@ -8,8 +8,11 @@ from monthly_stats.supabase_client import (
     fetch_existing_monthly_row,
     fetch_logs_paginated,
     save_monthly_stats_row,
+    update_monthly_stats_telegram_fields,
     update_monthly_stats_twitter_fields,
 )
+from monthly_stats.telegram_client import send_telegram_message
+from monthly_stats.telegram_text import build_monthly_telegram_interpretation
 from monthly_stats.twitter_client import post_thread_tweets, validate_thread_tweets
 from monthly_stats.utils import dt_to_unix_ms, now_utc, safe_int
 from monthly_tweet_interpretations import build_thread_tweets
@@ -21,6 +24,12 @@ def should_skip_twitter_post(existing_row: Optional[Dict[str, Any]]) -> bool:
     root_tweet_id = existing_row.get("root_tweet_id")
     tweet_count = safe_int(existing_row.get("tweet_count"), default=0) or 0
     return bool(root_tweet_id) or tweet_count > 0
+
+
+def should_skip_telegram_post(existing_row: Optional[Dict[str, Any]]) -> bool:
+    if not existing_row:
+        return False
+    return bool(existing_row.get("telegram_posted") or existing_row.get("telegram_message_id"))
 
 
 def run_monthly_job(window_days: int = 30) -> List[str]:
@@ -81,36 +90,54 @@ def run_monthly_job(window_days: int = 30) -> List[str]:
             period_end_iso=period_end_iso,
         )
 
-    if should_skip_twitter_post(existing_row):
-        print("Twitter thread already posted for this period, skipping", flush=True)
-        return []
-
     saved = existing_row or save_monthly_stats_row(stats=stats, supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY, tweet_ids=[])
     print(f"[supabase] monthly_stats row saved id={saved.get('id', 'n/a')}")
 
-    is_valid, validation_errors = validate_thread_tweets(tweets)
-    if not is_valid:
-        print(f"[thread validation] failed: {validation_errors}", flush=True)
-        raise RuntimeError("Thread validation failed, skipping Twitter posting")
+    posted_tweet_ids: List[str] = []
+    if should_skip_twitter_post(existing_row):
+        print("Twitter thread already posted for this period, skipping", flush=True)
+    else:
+        is_valid, validation_errors = validate_thread_tweets(tweets)
+        if not is_valid:
+            print(f"[thread validation] failed: {validation_errors}", flush=True)
+            raise RuntimeError("Thread validation failed, skipping Twitter posting")
 
-    try:
-        tweet_ids = post_thread_tweets(tweets)
-        print(f"[twitter] posted_thread_ids={tweet_ids}")
-    except Exception as twitter_error:
-        print(f"[twitter] failed after monthly_stats save: {twitter_error}", flush=True)
-        raise
+        try:
+            posted_tweet_ids = post_thread_tweets(tweets)
+            print(f"[twitter] posted_thread_ids={posted_tweet_ids}")
+        except Exception as twitter_error:
+            print(f"[twitter] failed after monthly_stats save: {twitter_error}", flush=True)
+            raise
 
-    saved_id = saved.get("id") if isinstance(saved, dict) else None
-    if saved_id:
-        updated = update_monthly_stats_twitter_fields(
-            row_id=saved_id,
-            tweet_ids=tweet_ids,
-            supabase_url=SUPABASE_URL,
-            supabase_key=SUPABASE_KEY,
-        )
-        print(f"[supabase] monthly_stats twitter fields updated id={updated.get('id', saved_id)}")
+        saved_id = saved.get("id") if isinstance(saved, dict) else None
+        if saved_id:
+            updated = update_monthly_stats_twitter_fields(
+                row_id=saved_id,
+                tweet_ids=posted_tweet_ids,
+                supabase_url=SUPABASE_URL,
+                supabase_key=SUPABASE_KEY,
+            )
+            print(f"[supabase] monthly_stats twitter fields updated id={updated.get('id', saved_id)}")
 
-    return tweet_ids
+    if should_skip_telegram_post(existing_row):
+        print("Telegram post already sent for this period, skipping", flush=True)
+    else:
+        telegram_text = build_monthly_telegram_interpretation(stats)
+        try:
+            result = send_telegram_message(telegram_text)
+            saved_id = saved.get("id") if isinstance(saved, dict) else None
+            if result and saved_id:
+                updated = update_monthly_stats_telegram_fields(
+                    row_id=saved_id,
+                    message_id=result.get("message_id"),
+                    supabase_url=SUPABASE_URL,
+                    supabase_key=SUPABASE_KEY,
+                )
+                print(f"[supabase] monthly_stats telegram fields updated id={updated.get('id', saved_id)}")
+        except Exception as telegram_error:
+            print(f"[telegram] warning: failed to post after Twitter stage: {telegram_error}", flush=True)
+
+    return posted_tweet_ids
 
 
 def main() -> None:
