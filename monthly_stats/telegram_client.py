@@ -23,6 +23,7 @@ def send_telegram_message(text: str) -> Optional[Dict[str, Any]]:
             "chat_id": chat_id,
             "text": text,
             "disable_web_page_preview": True,
+            "parse_mode": "HTML",
         },
         timeout=REQUEST_TIMEOUT,
     )
