@@ -70,10 +70,10 @@ def compute_risk_stats(rows: List[Dict[str, Any]], start_dt: datetime, end_dt: d
         if per_symbol_obs[sym] > 0
     }
 
-    def top_symbol(counter: Counter) -> Any:
+    def top_symbol_count(counter: Counter) -> Any:
         if not counter:
             return None
-        return sorted(counter.items(), key=lambda item: (-item[1], item[0]))[0][0]
+        return sorted(counter.items(), key=lambda item: (-item[1], item[0]))[0][1]
 
     return {
         "rows": len(risk_rows),
